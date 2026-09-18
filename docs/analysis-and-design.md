@@ -17,15 +17,15 @@ Bizcord is a Discord-like chat app. Each team builds one microservice, which own
 
 **Not responsible for:** checking that a channel or author exists (Channels and Users own those), or notifying users (Notifications does that).
 
-**Data ownership:** it is the only service that stores or changes messages, and other services never read its data directly. A message refers to its channel and author by id only, because those belong to other services. Other services only see a shared model with the fields they need, so the internals can change without breaking them.
+**Data ownership:** it is the only service that stores or changes messages, and other services never read its data directly. A message refers to its channel and author by id only, because those belong to other services. Other services only see the shared model in `packages/Shared.Contracts` (`MessageDto`). Internal details, such as when a message was last edited, stay inside the service.
 
 ## Interactions
 
-- **REST API (synchronous):** other services post and read messages by calling the Messaging Service.
+- **REST API (synchronous):** other services create, read, update and delete messages at `/api/messages`.
 - **Events (asynchronous):** when a message is posted, the service announces it, and services such as Notifications react. It doesn't know or wait for who reacts.
 
 ```mermaid
 flowchart LR
-    U[User] -- posts a message --> M[Messaging Service]
+    U[User] -- POST /api/messages --> M[Messaging Service]
     M -- message posted --> N[Notifications]
 ```
