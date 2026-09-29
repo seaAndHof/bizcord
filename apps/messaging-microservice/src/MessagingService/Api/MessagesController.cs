@@ -14,11 +14,11 @@ public record EditMessageRequest(string Content);
 public class MessagesController(MessageService messages) : ControllerBase
 {
     [HttpPost]
-    public IActionResult Post(CreateMessageRequest request)
+    public async Task<IActionResult> Post(CreateMessageRequest request)
     {
         try
         {
-            var message = messages.Post(request.ChannelId, request.AuthorId, request.Content);
+            var message = await messages.PostAsync(request.ChannelId, request.AuthorId, request.Content);
             return CreatedAtAction(nameof(Get), new { id = message.Id }, ToDto(message));
         }
         catch (DomainException e)
