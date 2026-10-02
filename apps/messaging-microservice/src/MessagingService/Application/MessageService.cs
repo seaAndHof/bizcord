@@ -1,14 +1,26 @@
+using MessageClient;
 using MessagingService.Domain;
 using MessagingService.Infrastructure;
+using Shared.Contracts.Events;
 
 namespace MessagingService.Application;
 
-public class MessageService(IMessageRepository repository)
+public class MessageService(IMessageRepository repository, IMessageClient messageClient)
 {
-    public Message Post(Guid channelId, Guid authorId, string content)
+    public async Task<Message> PostAsync(Guid channelId, Guid authorId, string content)
     {
         var message = Message.Create(channelId, authorId, content);
         repository.Save(message);
+
+        await messageClient.PublishAsync(new MessagePostedEvent
+        {
+            MessageId = message.Id,
+            ChannelId = message.ChannelId,
+            AuthorId = message.AuthorId,
+            Content = message.Content.Value,
+            PostedAt = message.PostedAt
+        });
+
         return message;
     }
 
