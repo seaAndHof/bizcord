@@ -23,7 +23,7 @@ Bizcord is a Discord-like chat app. Each team builds one microservice, which own
 
 ## Interactions
 
-- **REST API (synchronous):** other services create, read, update and delete messages at `/api/messages`.
+- **REST API (synchronous):** other services create, read, update and delete messages at `/api/messages`. The endpoints are listed in the [service README](../apps/messaging-microservice/README.md).
 - **Events (asynchronous):** when a message is posted, the service publishes `MessagePostedEvent` to RabbitMQ. It doesn't know or wait for who reacts.
 
 ```mermaid
@@ -36,3 +36,9 @@ flowchart LR
 ```
 
 Posting succeeds even if a consumer is down. The event waits in that consumer's queue, so it catches up a little later (eventual consistency).
+
+## Trade-offs
+
+- **Messages are kept in memory.** They are lost when the service restarts. Moving to a database only means writing a new `IMessageRepository`.
+- **The event is published after the message is saved.** If RabbitMQ is down at that moment, the message is saved but the event is lost. An outbox would fix that.
+- **Channel and author aren't checked.** A message can point to a channel that doesn't exist, but posting keeps working when Channels or Users are down.
